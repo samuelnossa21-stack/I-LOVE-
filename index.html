@@ -1,0 +1,606 @@
+```html
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nuestros 8 Meses - Libro de Amor</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cinzel:wght@400;600;700&family=Lora:ital,wght@0,400;0,500;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        bookCover: '#721b2f',
+                        bookCoverDark: '#4a101d',
+                        goldAccent: '#d4af37',
+                        goldLight: '#f3e5ab',
+                        parchment: '#fdfbf7',
+                        warmInk: '#2c1810',
+                        roseAccent: '#c86d7c'
+                    },
+                    fontFamily: {
+                        serif: ['Lora', 'serif'],
+                        heading: ['Playfair Display', 'serif'],
+                        cursive: ['Alex Brush', 'cursive'],
+                        cinzel: ['Cinzel', 'serif']
+                    }
+                }
+            }
+        }
+    </script>
+
+    <style>
+        body {
+            background: radial-gradient(circle at center, #2e1c23 0%, #12090d 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        .ambient-light {
+            background: radial-gradient(circle at 50% 30%, rgba(243, 229, 171, 0.12) 0%, rgba(0,0,0,0) 70%);
+            pointer-events: none;
+        }
+
+        .paper-texture {
+            background-color: #fdfbf7;
+            background-image: radial-gradient(#e2d7c5 0.8px, transparent 0.8px), radial-gradient(#e2d7c5 0.8px, #fdfbf7 0.8px);
+            background-size: 24px 24px;
+            background-position: 0 0, 12px 12px;
+            box-shadow: inset 0 0 40px rgba(114, 27, 47, 0.08), 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .cover-texture {
+            background-color: #721b2f;
+            background-image: radial-gradient(rgba(212, 175, 55, 0.15) 1px, transparent 1px);
+            background-size: 16px 16px;
+            box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.6), 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        #hearts-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 5;
+        }
+
+        .gold-shimmer {
+            background: linear-gradient(135deg, #bf953f 0%, #fcf6ba 25%, #b38728 50%, #fbf5b7 75%, #aa771c 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @keyframes pulseGlow {
+            0%, 100% { opacity: 0.5; filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.4)); }
+            50% { opacity: 0.9; filter: drop-shadow(0 0 22px rgba(212, 175, 55, 0.8)); }
+        }
+
+        .glow-pulse {
+            animation: pulseGlow 3s infinite ease-in-out;
+        }
+
+        .page-transition {
+            transition: opacity 0.4s ease-in-out, transform 0.4s ease-in-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col items-center justify-between min-h-screen p-3 sm:p-6 select-none font-serif text-warmInk">
+
+    <div class="ambient-light absolute inset-0 z-0"></div>
+    <canvas id="hearts-canvas"></canvas>
+
+    <!-- Top Navigation Header -->
+    <header class="w-full max-w-xl flex justify-between items-center z-20 px-4 py-2.5 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-xl text-white mt-1">
+        <div class="flex items-center space-x-3">
+            <i class="fa-solid fa-book-bookmark text-goldAccent text-lg"></i>
+            <span class="font-cinzel tracking-wider text-xs sm:text-sm text-goldLight font-bold">Nuestros 8 Meses</span>
+        </div>
+
+        <div class="flex items-center space-x-3">
+            <div id="page-indicator" class="text-xs font-sans tracking-wide bg-white/10 px-3 py-1 rounded-full text-pink-100">
+                Portada
+            </div>
+
+            <button id="music-btn" class="flex items-center justify-center w-9 h-9 rounded-full bg-roseAccent/30 hover:bg-roseAccent/50 border border-roseAccent/50 text-white transition-all transform hover:scale-105 active:scale-95 shadow-md" title="Música de fondo">
+                <i id="music-icon" class="fa-solid fa-music text-xs"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Book Container -->
+    <main class="w-full max-w-xl flex-1 flex items-center justify-center my-4 z-10 px-2">
+        <div id="book-frame" class="w-full max-w-[420px] sm:max-w-[480px] h-[540px] sm:h-[580px] relative rounded-2xl overflow-hidden transition-all duration-500">
+            
+            <!-- Dynamic Page Content Rendered Here -->
+            <div id="page-container" class="w-full h-full flex flex-col justify-between p-6 sm:p-10 page-transition">
+                <!-- Injected via JS -->
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Bottom Controls Bar -->
+    <footer class="w-full max-w-md z-20 flex items-center justify-between px-4 py-2.5 bg-black/40 backdrop-blur-md rounded-full border border-white/10 shadow-2xl mb-2">
+        <button id="prev-btn" onclick="prevPage()" class="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 text-white text-xs font-sans transition disabled:opacity-30 disabled:cursor-not-allowed">
+            <i class="fa-solid fa-chevron-left"></i>
+            <span>Anterior</span>
+        </button>
+
+        <div class="flex space-x-1.5" id="dots-container"></div>
+
+        <button id="next-btn" onclick="nextPage()" class="flex items-center gap-2 px-4 py-2 rounded-full bg-roseAccent hover:bg-rose-700 text-white text-xs font-sans transition disabled:opacity-30 disabled:cursor-not-allowed">
+            <span>Siguiente</span>
+            <i class="fa-solid fa-chevron-right"></i>
+        </button>
+    </footer>
+
+    <script>
+        // Absolute State-Managed Page Sequence:
+        // 0: Cover
+        // 1: Page 1
+        // 2: Page 2
+        // 3: Page 3
+        // 4: Page 4
+        // 5: Page 5
+        // 6: Page 6
+        // 7: Back Cover
+        let currentPage = 0;
+        const totalPages = 7;
+
+        let isAudioPlaying = false;
+        let audioCtx = null;
+        let musicInterval = null;
+
+        const pagesData = [
+            // 0: Cover
+            {
+                type: 'cover',
+                title: 'Nuestros 8 Meses',
+                subtitle: 'Together',
+                description: 'Un libro de amor para mi corazontito de melocotón',
+                bgClass: 'cover-texture border-2 border-goldAccent/50 text-goldLight'
+            },
+            // 1: Page 1
+            {
+                type: 'page',
+                number: '1',
+                chapter: 'Capítulo I',
+                content: `Amor, paso a recordarte y a felicitarte por los ocho meses que acabamos de cumplir.`,
+                highlight: `¡Wow!, es asombroso todo este tiempo felices. No me queda más que agradecerte por cada sonrisa que me has sacado, por cada momento que hemos celebrado y por cada vez que me has hecho sentir único, dándole un verdadero propósito a mi vida.`
+            },
+            // 2: Page 2
+            {
+                type: 'page',
+                number: '2',
+                chapter: 'Capítulo II',
+                content: `Tal vez te preguntes cuál es ese propósito: <strong class="text-rose-900 font-semibold">hacerte feliz</strong>, nada más que eso. Estos días en los que hemos estado separados escuché tu podcast sobre nuestra vida de casados, y te juro que quiero que eso se convierta en realidad.`,
+                highlight: `No deseo otra cosa que formar una vida a tu lado. Sé que el camino no siempre será fácil y que habrá problemas, pero no importa; los resolveremos juntos.`
+            },
+            // 3: Page 3
+            {
+                type: 'page',
+                number: '3',
+                chapter: 'Capítulo III',
+                content: `Estos ocho meses me han enseñado que no hay mejor lugar que estar contigo, ni sensación más pura que un abrazo tuyo.`,
+                highlight: `Comprendo que lo repito demasiado, pero te agradezco infinitamente por todas las veces en que me has hecho mejor persona y por la forma en que te metiste en mi corazón sin que me diera cuenta.`
+            },
+            // 4: Page 4
+            {
+                type: 'page',
+                number: '4',
+                chapter: 'Capítulo IV',
+                content: `Perdón si este mensaje es breve, pero el recuerdo de tantos momentos hermosos a tu lado me conmueve profundamente y hasta me hace llorar.`,
+                highlight: `A veces siento que no te merezco, y por eso te pido sinceras disculpas.`
+            },
+            // 5: Page 5
+            {
+                type: 'page',
+                number: '5',
+                chapter: 'Capítulo V',
+                content: `Entiendo que las palabras no arreglan todo por sí solas, pero estoy dispuesto a esforzarme al máximo para volverme digno de ti y poder decir con orgullo que eres mi mujer.`,
+                isList: true,
+                items: [
+                    "Entrenar para tener un buen físico.",
+                    "Estudiar para ser un excelente alumno.",
+                    "Aprender a expresarme y dominar tu lenguaje del amor."
+                ]
+            },
+            // 6: Page 6
+            {
+                type: 'page',
+                number: '6',
+                chapter: 'Capítulo VI',
+                isClosing: true,
+                titleClosing: "Gracias por todo.",
+                subtitleClosing: "Felices ocho meses,",
+                nameClosing: "mi corazontito de melocotón "
+            },
+            // 7: Back Cover
+            {
+                type: 'backcover',
+                title: 'Nuestra Historia Continúa',
+                subtitle: '8 Meses y toda una vida por delante',
+                bgClass: 'cover-texture border-2 border-goldAccent/50 text-goldLight'
+            }
+        ];
+
+        const pageContainer = document.getElementById('page-container');
+        const prevBtn = document.getElementById('prev-btn');
+        const nextBtn = document.getElementById('next-btn');
+        const pageIndicator = document.getElementById('page-indicator');
+        const dotsContainer = document.getElementById('dots-container');
+        const bookFrame = document.getElementById('book-frame');
+
+        const labelNames = [
+            "Portada", "Página 1", "Página 2", "Página 3", "Página 4", "Página 5", "Página 6", "Contraportada"
+        ];
+
+        function initBook() {
+            renderPage();
+            renderDots();
+            setupKeyboardAndTouch();
+            initHeartsCanvas();
+        }
+
+        function renderDots() {
+            dotsContainer.innerHTML = '';
+            for (let i = 0; i <= totalPages; i++) {
+                const dot = document.createElement('div');
+                dot.className = `w-2 h-2 rounded-full transition-all duration-300 ${i === currentPage ? 'bg-goldAccent w-4' : 'bg-white/30'}`;
+                dotsContainer.appendChild(dot);
+            }
+        }
+
+        function renderPage() {
+            // Fade out effect
+            pageContainer.style.opacity = '0';
+            pageContainer.style.transform = 'scale(0.98)';
+
+            setTimeout(() => {
+                const p = pagesData[currentPage];
+
+                if (p.type === 'cover') {
+                    bookFrame.className = "w-full max-w-[420px] sm:max-w-[480px] h-[540px] sm:h-[580px] relative rounded-2xl overflow-hidden transition-all duration-500 shadow-2xl";
+                    pageContainer.className = "w-full h-full flex flex-col justify-between p-8 cover-texture border-2 border-goldAccent/40 text-goldLight rounded-2xl page-transition";
+                    pageContainer.innerHTML = `
+                        <div class="absolute inset-3 border border-goldAccent/30 rounded-xl pointer-events-none flex flex-col justify-between p-3">
+                            <div class="flex justify-between text-xs text-goldAccent"><i class="fa-solid fa-crown"></i><i class="fa-solid fa-crown"></i></div>
+                            <div class="flex justify-between text-xs text-goldAccent"><i class="fa-solid fa-crown"></i><i class="fa-solid fa-crown"></i></div>
+                        </div>
+
+                        <div class="mt-4 text-center space-y-2 z-10">
+                            <p class="font-cursive text-3xl sm:text-4xl text-roseAccent">${p.title}</p>
+                            <h1 class="font-cinzel text-3xl sm:text-5xl font-bold tracking-widest gold-shimmer uppercase py-1">
+                                ${p.subtitle}
+                            </h1>
+                            <div class="w-24 h-0.5 bg-gradient-to-r from-transparent via-goldAccent to-transparent mx-auto"></div>
+                        </div>
+
+                        <div class="my-auto text-center z-10 flex justify-center">
+                            <div class="w-32 h-32 rounded-full border-2 border-goldAccent/50 flex items-center justify-center bg-bookCoverDark/60 shadow-inner glow-pulse">
+                                <i class="fa-solid fa-heart text-6xl text-roseAccent"></i>
+                            </div>
+                        </div>
+
+                        <div class="mb-2 text-center z-10 space-y-3">
+                            <p class="font-serif italic text-sm text-goldLight/90 max-w-[260px] mx-auto">${p.description}</p>
+                            <div class="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-goldAccent/20 border border-goldAccent/40 text-goldLight text-xs animate-bounce">
+                                <span>Toca Siguiente para abrir</span>
+                                <i class="fa-solid fa-arrow-right"></i>
+                            </div>
+                        </div>
+                    `;
+                } else if (p.type === 'page') {
+                    bookFrame.className = "w-full max-w-[420px] sm:max-w-[480px] h-[540px] sm:h-[580px] relative rounded-2xl overflow-hidden transition-all duration-500 shadow-2xl";
+                    pageContainer.className = "w-full h-full flex flex-col justify-between p-6 sm:p-8 paper-texture rounded-2xl page-transition";
+                    
+                    let bodyContent = '';
+                    if (p.isClosing) {
+                        bodyContent = `
+                            <div class="my-auto space-y-5 text-center">
+                                <p class="font-cursive text-3xl sm:text-4xl text-rose-900 leading-snug">
+                                    ${p.titleClosing}
+                                </p>
+                                <div class="p-5 bg-rose-50/80 rounded-2xl border border-rose-200 shadow-sm space-y-2">
+                                    <p class="font-cinzel text-base sm:text-lg font-bold text-warmInk">
+                                        ${p.subtitleClosing}
+                                    </p>
+                                    <p class="font-cursive text-2xl sm:text-3xl text-roseAccent font-bold">
+                                        ${p.nameClosing}
+                                    </p>
+                                </div>
+                                <button onclick="triggerSurprise(event)" class="px-5 py-2.5 rounded-full bg-roseAccent text-white font-sans text-xs tracking-wider uppercase shadow-lg hover:bg-rose-700 transition transform hover:scale-105 active:scale-95 flex items-center gap-2 mx-auto">
+                                    <i class="fa-solid fa-wand-magic-sparkles"></i>
+                                    Enviar un abrazo virtual
+                                </button>
+                            </div>
+                        `;
+                    } else if (p.isList) {
+                        bodyContent = `
+                            <div class="my-auto space-y-4 text-left">
+                                <p class="text-sm sm:text-base leading-relaxed font-serif text-warmInk">
+                                    ${p.content}
+                                </p>
+                                <div class="p-3 bg-rose-50/70 rounded-xl border-l-2 border-roseAccent space-y-2">
+                                    <p class="text-xs font-bold text-rose-900 uppercase tracking-wider">Quiero enorgullecerte:</p>
+                                    <ul class="space-y-2 text-xs sm:text-sm font-serif">
+                                        ${p.items.map(item => `
+                                            <li class="flex items-center gap-2">
+                                                <i class="fa-solid fa-heart text-roseAccent text-xs"></i>
+                                                <span>${item}</span>
+                                            </li>
+                                        `).join('')}
+                                    </ul>
+                                </div>
+                            </div>
+                        `;
+                    } else {
+                        bodyContent = `
+                            <div class="my-auto space-y-4 text-left">
+                                <p class="text-sm sm:text-base leading-relaxed font-serif text-warmInk">
+                                    ${p.content}
+                                </p>
+                                ${p.highlight ? `
+                                    <p class="text-sm sm:text-base leading-relaxed font-serif text-warmInk font-medium bg-roseAccent/10 p-3 rounded-xl border-l-2 border-roseAccent">
+                                        ${p.highlight}
+                                    </p>
+                                ` : ''}
+                            </div>
+                        `;
+                    }
+
+                    pageContainer.innerHTML = `
+                        <div class="flex justify-between items-center border-b border-roseAccent/20 pb-2">
+                            <span class="font-cursive text-xl text-roseAccent">${p.chapter}</span>
+                            <span class="text-xs text-gray-500 font-sans">Pág. ${p.number}</span>
+                        </div>
+
+                        ${bodyContent}
+
+                        <div class="text-center pt-2 border-t border-roseAccent/20">
+                            <i class="fa-solid fa-heart text-roseAccent/40 text-xs"></i>
+                        </div>
+                    `;
+                } else if (p.type === 'backcover') {
+                    bookFrame.className = "w-full max-w-[420px] sm:max-w-[480px] h-[540px] sm:h-[580px] relative rounded-2xl overflow-hidden transition-all duration-500 shadow-2xl";
+                    pageContainer.className = "w-full h-full flex flex-col justify-between p-8 cover-texture border-2 border-goldAccent/40 text-goldLight rounded-2xl page-transition text-center";
+                    pageContainer.innerHTML = `
+                        <div class="my-auto space-y-5">
+                            <i class="fa-solid fa-book-open text-5xl text-goldAccent"></i>
+                            <h2 class="font-cinzel text-xl font-bold tracking-widest text-goldLight uppercase">${p.title}</h2>
+                            <p class="font-cursive text-3xl text-roseAccent">${p.subtitle}</p>
+                        </div>
+
+                        <button onclick="resetBook(event)" class="px-6 py-3 rounded-full bg-goldAccent/20 border border-goldAccent/40 text-goldLight text-xs hover:bg-goldAccent/40 transition mx-auto flex items-center gap-2">
+                            <i class="fa-solid fa-rotate-left"></i> Volver al Inicio
+                        </button>
+                    `;
+                }
+
+                // Fade in
+                pageContainer.style.opacity = '1';
+                pageContainer.style.transform = 'scale(1)';
+            }, 200);
+
+            prevBtn.disabled = currentPage === 0;
+            nextBtn.disabled = currentPage === totalPages;
+            pageIndicator.textContent = labelNames[currentPage];
+            renderDots();
+        }
+
+        function nextPage() {
+            if (currentPage < totalPages) {
+                currentPage++;
+                renderPage();
+                playPageFlipSound();
+            }
+        }
+
+        function prevPage() {
+            if (currentPage > 0) {
+                currentPage--;
+                renderPage();
+                playPageFlipSound();
+            }
+        }
+
+        function resetBook(e) {
+            if (e) e.stopPropagation();
+            currentPage = 0;
+            renderPage();
+            playPageFlipSound();
+        }
+
+        function setupKeyboardAndTouch() {
+            document.addEventListener('keydown', (e) => {
+                if (e.key === 'ArrowRight' || e.key === ' ') nextPage();
+                if (e.key === 'ArrowLeft') prevPage();
+            });
+
+            let touchStartX = 0;
+            const container = document.getElementById('book-frame');
+            container.addEventListener('touchstart', (e) => {
+                touchStartX = e.changedTouches[0].screenX;
+            }, { passive: true });
+
+            container.addEventListener('touchend', (e) => {
+                const touchEndX = e.changedTouches[0].screenX;
+                if (touchStartX - touchEndX > 40) nextPage();
+                if (touchEndX - touchStartX > 40) prevPage();
+            }, { passive: true });
+        }
+
+        const musicBtn = document.getElementById('music-btn');
+        const musicIcon = document.getElementById('music-icon');
+
+        musicBtn.addEventListener('click', toggleMusic);
+
+        function toggleMusic() {
+            if (!isAudioPlaying) {
+                startMelody();
+                musicBtn.classList.add('bg-roseAccent', 'text-goldLight');
+                musicIcon.className = 'fa-solid fa-volume-high text-xs';
+                isAudioPlaying = true;
+            } else {
+                stopMelody();
+                musicBtn.classList.remove('bg-roseAccent', 'text-goldLight');
+                musicIcon.className = 'fa-solid fa-music text-xs';
+                isAudioPlaying = false;
+            }
+        }
+
+        function startMelody() {
+            try {
+                const AudioContext = window.AudioContext || window.webkitAudioContext;
+                audioCtx = new AudioContext();
+
+                const notes = [261.63, 329.63, 392.00, 523.25, 392.00, 329.63]; 
+                let noteIdx = 0;
+
+                musicInterval = setInterval(() => {
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+
+                    osc.type = 'sine';
+                    osc.frequency.setValueAtTime(notes[noteIdx], audioCtx.currentTime);
+
+                    gain.gain.setValueAtTime(0.05, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + 1.2);
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 1.2);
+
+                    noteIdx = (noteIdx + 1) % notes.length;
+                }, 500);
+            } catch (e) {}
+        }
+
+        function stopMelody() {
+            if (musicInterval) clearInterval(musicInterval);
+            if (audioCtx) {
+                audioCtx.close();
+                audioCtx = null;
+            }
+        }
+
+        function playPageFlipSound() {
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                const ctx = new AudioCtx();
+                
+                const bufferSize = ctx.sampleRate * 0.1;
+                const buffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+                const data = buffer.getChannelData(0);
+                for (let i = 0; i < bufferSize; i++) {
+                    data[i] = Math.random() * 2 - 1;
+                }
+
+                const noise = ctx.createBufferSource();
+                noise.buffer = buffer;
+
+                const filter = ctx.createBiquadFilter();
+                filter.type = 'bandpass';
+                filter.frequency.value = 800;
+
+                const gain = ctx.createGain();
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.1);
+
+                noise.connect(filter);
+                filter.connect(gain);
+                gain.connect(ctx.destination);
+
+                noise.start();
+                setTimeout(() => ctx.close(), 150);
+            } catch(e) {}
+        }
+
+        function initHeartsCanvas() {
+            const canvas = document.getElementById('hearts-canvas');
+            const ctx = canvas.getContext('2d');
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const particles = [];
+            for (let i = 0; i < 24; i++) {
+                particles.push({
+                    x: Math.random() * canvas.width,
+                    y: canvas.height + Math.random() * 100,
+                    size: Math.random() * 10 + 6,
+                    speedY: Math.random() * 0.7 + 0.3,
+                    speedX: Math.sin(Math.random() * Math.PI) * 0.3,
+                    opacity: Math.random() * 0.4 + 0.2
+                });
+            }
+
+            function animate() {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                particles.forEach(p => {
+                    p.y -= p.speedY;
+                    p.x += p.speedX;
+                    if (p.y < -20) {
+                        p.y = canvas.height + 20;
+                        p.x = Math.random() * canvas.width;
+                    }
+
+                    ctx.save();
+                    ctx.translate(p.x, p.y);
+                    ctx.fillStyle = `rgba(200, 109, 124, ${p.opacity})`;
+                    ctx.beginPath();
+                    const topCurve = p.size * 0.3;
+                    ctx.moveTo(0, topCurve);
+                    ctx.bezierCurveTo(0, 0, -p.size / 2, 0, -p.size / 2, topCurve);
+                    ctx.bezierCurveTo(-p.size / 2, (p.size + topCurve) / 2, 0, p.size, 0, p.size);
+                    ctx.bezierCurveTo(0, p.size, p.size / 2, (p.size + topCurve) / 2, p.size / 2, topCurve);
+                    ctx.bezierCurveTo(p.size / 2, 0, 0, 0, 0, topCurve);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.restore();
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+
+        function triggerSurprise(event) {
+            event.stopPropagation();
+            const btn = event.currentTarget;
+            btn.innerHTML = '<i class="fa-solid fa-heart animate-ping"></i> ¡Abrazo enviado!';
+            btn.classList.replace('bg-roseAccent', 'bg-emerald-600');
+
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fa-solid fa-wand-magic-sparkles"></i> Enviar un abrazo virtual';
+                btn.classList.replace('bg-emerald-600', 'bg-roseAccent');
+            }, 3000);
+        }
+
+        window.onload = initBook;
+    </script>
+</body>
+</html>
+```
